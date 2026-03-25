@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Htet Wai — BIM Specialist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --navy: #0f1e3d;
+      --gold: #c9a84c;
+      --gold-pale: #f0e0a8;
+      --cream: #fafaf7;
+      --white: #ffffff;
+      --gray: #64748b;
+      --light: #f1f0eb;
+      --border: rgba(15,30,61,0.09);
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Outfit', sans-serif; background: var(--cream); color: var(--navy); overflow-x: hidden; }
+
+    .cursor { width: 10px; height: 10px; background: var(--gold); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transition: transform 0.15s ease; mix-blend-mode: multiply; }
+
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 500; padding: 1.4rem 5vw; display: flex; justify-content: space-between; align-items: center; background: rgba(250,250,247,0.92); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); }
+    .nav-brand { display: flex; align-items: center; gap: 0.8rem; text-decoration: none; }
+    .nav-brand-dot { width: 8px; height: 8px; background: var(--gold); border-radius: 50%; }
+    .nav-brand-text { font-family: 'Playfair Display', serif; font-size: 1.15rem; color: var(--navy); letter-spacing: 0.5px; }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a { font-size: 0.78rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray); text-decoration: none; font-weight: 500; transition: color 0.25s; position: relative; }
+    .nav-links a::after { content: ''; position: absolute; bottom: -3px; left: 0; width: 0; height: 1px; background: var(--gold); transition: width 0.3s ease; }
+    .nav-links a:hover { color: var(--navy); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta { padding: 0.6rem 1.4rem; background: var(--navy); color: white !important; font-size: 0.75rem; letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; font-weight: 500; transition: background 0.25s !important; border-radius: 2px; }
+    .nav-cta:hover { background: var(--gold) !important; color: var(--navy) !important; }
+    .nav-cta::after { display: none !important; }
+
+    .hero { min-height: 100vh; padding: 10rem 5vw 5rem; display: grid; grid-template-columns: 1fr 400px; gap: 4rem; align-items: center; position: relative; overflow: hidden; }
+    .hero-bg-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Playfair Display', serif; font-size: clamp(10rem, 20vw, 22rem); font-weight: 700; color: rgba(15,30,61,0.03); letter-spacing: -10px; pointer-events: none; user-select: none; white-space: nowrap; }
+    .hero-label { display: inline-flex; align-items: center; gap: 0.6rem; font-size: 0.72rem; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 1.5rem; opacity: 0; animation: up 0.7s ease forwards 0.1s; }
+    .hero-label::before { content: ''; width: 30px; height: 1px; background: var(--gold); }
+    h1 { font-family: 'Playfair Display', serif; font-size: clamp(3.5rem, 6vw, 6.5rem); font-weight: 400; line-height: 1.0; color: var(--navy); margin-bottom: 0.3rem; opacity: 0; animation: up 0.7s ease forwards 0.2s; }
+    h1 em { font-style: italic; color: var(--gold); display: block; }
+    .hero-role { font-size: clamp(1rem, 1.5vw, 1.15rem); color: var(--gray); font-weight: 300; margin-bottom: 2rem; opacity: 0; animation: up 0.7s ease forwards 0.3s; }
+    .hero-desc { font-size: 0.93rem; line-height: 1.9; color: var(--gray); max-width: 500px; font-weight: 300; margin-bottom: 3rem; opacity: 0; animation: up 0.7s ease forwards 0.4s; }
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; opacity: 0; animation: up 0.7s ease forwards 0.5s; }
+    .btn { display: inline-block; padding: 0.9rem 2.2rem; font-size: 0.78rem; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; text-decoration: none; transition: all 0.3s; border-radius: 2px; }
+    .btn-dark { background: var(--navy); color: white; border: 1.5px solid var(--navy); }
+    .btn-dark:hover { background: var(--gold); border-color: var(--gold); color: var(--navy); }
+    .btn-ghost { background: transparent; color: var(--navy); border: 1.5px solid var(--navy); }
+    .btn-ghost:hover { background: var(--navy); color: white; }
+
+    .hero-card { background: var(--navy); padding: 2.8rem; color: white; position: relative; overflow: hidden; opacity: 0; animation: fadein 1s ease forwards 0.5s; }
+    .hero-card::before { content: ''; position: absolute; top: 0; right: 0; width: 120px; height: 120px; background: radial-gradient(circle, rgba(201,168,76,0.2) 0%, transparent 70%); }
+    .hc-label { font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 1.2rem; }
+    .hc-company { font-family: 'Playfair Display', serif; font-size: 1.45rem; font-weight: 400; color: white; line-height: 1.3; margin-bottom: 0.4rem; }
+    .hc-sub { font-size: 0.8rem; color: rgba(255,255,255,0.45); font-weight: 300; margin-bottom: 1.8rem; }
+    .hc-div { height: 1px; background: rgba(255,255,255,0.08); margin: 1.4rem 0; }
+    .hc-stat { display: flex; justify-content: space-between; margin-bottom: 0.7rem; }
+    .hc-stat-label { font-size: 0.73rem; color: rgba(255,255,255,0.4); font-weight: 300; }
+    .hc-stat-value { font-size: 0.73rem; color: var(--gold); font-weight: 500; }
+    .avail { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1.4rem; font-size: 0.7rem; color: rgba(255,255,255,0.45); letter-spacing: 0.5px; }
+    .avail-dot { width: 7px; height: 7px; background: #4ade80; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+    .marquee-wrap { overflow: hidden; background: var(--navy); padding: 1rem 0; }
+    .marquee-track { display: flex; gap: 3rem; animation: marquee 22s linear infinite; white-space: nowrap; }
+    .marquee-item { font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.3); font-weight: 500; flex-shrink: 0; }
+    .marquee-item span { color: var(--gold); margin-right: 2.5rem; }
+    @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    .section { padding: 7rem 5vw; }
+    .section-alt { background: var(--white); }
+    .section-dark { background: var(--navy); }
+    .s-label { display: inline-flex; align-items: center; gap: 0.6rem; font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 0.8rem; }
+    .s-label::before { content: ''; width: 24px; height: 1px; background: var(--gold); }
+    h2 { font-family: 'Playfair Display', serif; font-size: clamp(2.2rem, 3.5vw, 3.2rem); font-weight: 400; line-height: 1.15; color: var(--navy); margin-bottom: 3.5rem; }
+    h2 em { font-style: italic; color: var(--gold); }
+    .section-dark h2 { color: white; }
+
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: start; }
+    .about-text p { font-size: 0.93rem; line-height: 1.95; color: var(--gray); font-weight: 300; margin-bottom: 1.4rem; }
+    .about-text p strong { color: var(--navy); font-weight: 600; }
+    .about-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 2.5rem; }
+    .about-stat { background: var(--white); padding: 1.8rem 1.5rem; text-align: center; }
+    .about-stat-num { font-family: 'Playfair Display', serif; font-size: 2.6rem; font-weight: 400; color: var(--navy); line-height: 1; margin-bottom: 0.3rem; }
+    .about-stat-num span { color: var(--gold); }
+    .about-stat-text { font-size: 0.67rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray); }
+
+    .timeline { display: flex; flex-direction: column; }
+    .tl-item { display: grid; grid-template-columns: 75px 1fr; gap: 1.5rem; padding: 1.8rem 0; border-bottom: 1px solid var(--border); }
+    .tl-item:last-child { border-bottom: none; }
+    .tl-year { font-size: 0.68rem; color: var(--gold); font-weight: 600; letter-spacing: 1px; padding-top: 0.15rem; line-height: 1.5; }
+    .tl-content h4 { font-size: 0.88rem; font-weight: 600; color: var(--navy); margin-bottom: 0.2rem; }
+    .tl-company { font-size: 0.75rem; color: var(--gold); font-weight: 500; margin-bottom: 0.4rem; }
+    .tl-content p { font-size: 0.78rem; color: var(--gray); line-height: 1.7; font-weight: 300; }
+
+    .tools-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+    .tool-card { background: var(--white); padding: 2.2rem 1.5rem; text-align: center; transition: all 0.3s; cursor: default; position: relative; overflow: hidden; }
+    .tool-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--gold); transform: scaleX(0); transition: transform 0.3s ease; }
+    .tool-card:hover::after { transform: scaleX(1); }
+    .tool-card:hover { background: var(--cream); transform: translateY(-3px); }
+    .tool-icon { font-size: 1.7rem; margin-bottom: 0.9rem; display: block; }
+    .tool-name { font-size: 0.73rem; letter-spacing: 1px; text-transform: uppercase; font-weight: 600; color: var(--navy); margin-bottom: 0.25rem; }
+    .tool-type { font-size: 0.67rem; color: var(--gray); font-weight: 300; }
+    .certs-row { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 3rem; }
+    .cert-pill { padding: 0.55rem 1.1rem; border: 1px solid var(--border); font-size: 0.73rem; color: var(--navy); font-weight: 400; background: var(--white); transition: all 0.25s; }
+    .cert-pill:hover { border-color: var(--gold); color: var(--gold); }
+
+    .projects-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5px; background: rgba(255,255,255,0.05); }
+    .project-card { background: rgba(255,255,255,0.03); padding: 2.8rem 2.5rem; border: 1px solid rgba(255,255,255,0.06); transition: all 0.3s; position: relative; overflow: hidden; }
+    .project-card:hover { background: rgba(255,255,255,0.07); }
+    .project-num { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 700; color: rgba(201,168,76,0.08); line-height: 1; margin-bottom: 1.2rem; transition: color 0.3s; }
+    .project-card:hover .project-num { color: rgba(201,168,76,0.18); }
+    .project-period { font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 0.6rem; }
+    .project-card h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 400; color: white; margin-bottom: 0.9rem; line-height: 1.35; }
+    .project-card p { font-size: 0.78rem; line-height: 1.75; color: rgba(255,255,255,0.42); font-weight: 300; margin-bottom: 1rem; }
+    .project-tag { display: inline-block; padding: 0.22rem 0.65rem; border: 1px solid rgba(201,168,76,0.28); font-size: 0.63rem; color: rgba(201,168,76,0.7); letter-spacing: 1px; text-transform: uppercase; font-weight: 500; }
+
+    .contact-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center; }
+    .contact-left h2 { margin-bottom: 1.2rem; }
+    .contact-left > p { font-size: 0.93rem; line-height: 1.9; color: var(--gray); font-weight: 300; margin-bottom: 2.5rem; }
+    .contact-items { display: flex; flex-direction: column; gap: 1.1rem; }
+    .contact-item { display: flex; align-items: center; gap: 1rem; text-decoration: none; }
+    .ci-icon { width: 42px; height: 42px; background: var(--light); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; transition: background 0.25s; }
+    .contact-item:hover .ci-icon { background: var(--gold); }
+    .ci-label { font-size: 0.63rem; letter-spacing: 2px; text-transform: uppercase; color: var(--gray); font-weight: 500; }
+    .ci-value { font-size: 0.86rem; color: var(--navy); font-weight: 400; transition: color 0.25s; }
+    .contact-item:hover .ci-value { color: var(--gold); }
+    .contact-right { background: var(--navy); padding: 3.2rem; color: white; }
+    .contact-right h3 { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 400; margin-bottom: 0.5rem; }
+    .contact-right > p { font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-bottom: 2rem; font-weight: 300; }
+    .btn-gold { display: inline-block; padding: 0.88rem 1.9rem; background: var(--gold); color: var(--navy); font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; text-decoration: none; transition: all 0.3s; border-radius: 2px; }
+    .btn-gold:hover { background: white; }
+    .cr-div { height: 1px; background: rgba(255,255,255,0.08); margin: 2rem 0; }
+    .cr-info { font-size: 0.75rem; color: rgba(255,255,255,0.3); line-height: 1.9; font-weight: 300; }
+
+    footer { background: var(--navy); border-top: 1px solid rgba(255,255,255,0.06); padding: 2rem 5vw; display: flex; justify-content: space-between; align-items: center; }
+    .footer-brand { font-family: 'Playfair Display', serif; font-size: 1rem; color: white; text-decoration: none; }
+    .footer-brand span { color: var(--gold); }
+    .footer-text { font-size: 0.7rem; color: rgba(255,255,255,0.28); letter-spacing: 0.5px; }
+
+    @keyframes up { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+    @media (max-width: 900px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero { grid-template-columns: 1fr; padding: 8rem 1.5rem 4rem; gap: 3rem; }
+      .hero-bg-text { display: none; }
+      .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .tools-grid { grid-template-columns: repeat(3, 1fr); }
+      .projects-grid { grid-template-columns: 1fr; }
+      .contact-wrap { grid-template-columns: 1fr; gap: 3rem; }
+      .section { padding: 4rem 1.5rem; }
+      footer { flex-direction: column; gap: 0.8rem; text-align: center; padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+
+<nav>
+  <a href="https://twowai.com" class="nav-brand">
+    <div class="nav-brand-dot"></div>
+    <span class="nav-brand-text">TwoWai</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#tools">Tools</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#contact" class="nav-cta">Hire Me</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg-text">BIM</div>
+  <div>
+    <div class="hero-label">Façade BIM Specialist · Singapore</div>
+    <h1>Htet<br/><em>Wai</em></h1>
+    <p class="hero-role">Senior BIM Coordinator — Façade &amp; Infrastructure</p>
+    <p class="hero-desc">Building the digital backbone of Singapore's skyline. Specialising in façade BIM coordination, parametric modelling, and workflow automation for complex construction projects.</p>
+    <div class="hero-actions">
+      <a href="#projects" class="btn btn-dark">View Projects</a>
+      <a href="#contact" class="btn btn-ghost">Let's Talk</a>
+    </div>
+  </div>
+  <div class="hero-card">
+    <div class="hc-label">Currently At</div>
+    <div class="hc-company">Lindner Facades<br/>Asia Pte. Ltd.</div>
+    <div class="hc-sub">BIM Specialist · Dec 2024 – Present</div>
+    <div class="hc-div"></div>
+    <div class="hc-stat"><span class="hc-stat-label">Experience</span><span class="hc-stat-value">5+ Years</span></div>
+    <div class="hc-stat"><span class="hc-stat-label">Projects Delivered</span><span class="hc-stat-value">6 Major</span></div>
+    <div class="hc-stat"><span class="hc-stat-label">Certifications</span><span class="hc-stat-value">6 Active</span></div>
+    <div class="hc-stat"><span class="hc-stat-label">Education</span><span class="hc-stat-value">SP Dip. BIM Mgmt</span></div>
+    <div class="hc-div"></div>
+    <div class="avail"><div class="avail-dot"></div>Open to consulting opportunities</div>
+  </div>
+</section>
+
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="marquee-item"><span>·</span>Revit</span>
+    <span class="marquee-item"><span>·</span>Navisworks</span>
+    <span class="marquee-item"><span>·</span>Rhino &amp; Grasshopper</span>
+    <span class="marquee-item"><span>·</span>Dynamo</span>
+    <span class="marquee-item"><span>·</span>AutoCAD</span>
+    <span class="marquee-item"><span>·</span>BIM 360</span>
+    <span class="marquee-item"><span>·</span>Tekla</span>
+    <span class="marquee-item"><span>·</span>ArchiCAD</span>
+    <span class="marquee-item"><span>·</span>Twinmotion</span>
+    <span class="marquee-item"><span>·</span>Autodesk Inventor</span>
+    <span class="marquee-item"><span>·</span>Revit</span>
+    <span class="marquee-item"><span>·</span>Navisworks</span>
+    <span class="marquee-item"><span>·</span>Rhino &amp; Grasshopper</span>
+    <span class="marquee-item"><span>·</span>Dynamo</span>
+    <span class="marquee-item"><span>·</span>AutoCAD</span>
+    <span class="marquee-item"><span>·</span>BIM 360</span>
+    <span class="marquee-item"><span>·</span>Tekla</span>
+    <span class="marquee-item"><span>·</span>ArchiCAD</span>
+    <span class="marquee-item"><span>·</span>Twinmotion</span>
+    <span class="marquee-item"><span>·</span>Autodesk Inventor</span>
+  </div>
+</div>
+
+<section class="section section-alt" id="about">
+  <div class="about-grid">
+    <div>
+      <div class="s-label">About Me</div>
+      <h2>Precision Meets<br/><em>Digital Craft</em></h2>
+      <div class="about-text">
+        <p>I'm a <strong>BIM Specialist</strong> based in Singapore with over 5 years of experience delivering complex façade and infrastructure projects. Currently at <strong>Lindner Facades Asia</strong>, I work at the intersection of architecture, engineering, and technology.</p>
+        <p>My expertise spans the full BIM delivery lifecycle — from developing parametric façade models in Revit and Rhino to automating workflows through <strong>Dynamo and Grasshopper</strong> scripting. I thrive on turning complex design challenges into precise, buildable digital models.</p>
+        <p>I hold a <strong>Specialist Diploma in BIM Management</strong> from Singapore Polytechnic and a Bachelor of Civil Engineering, bringing both theoretical rigour and hands-on site experience to every project.</p>
+      </div>
+      <div class="about-stats">
+        <div class="about-stat"><div class="about-stat-num">5<span>+</span></div><div class="about-stat-text">Years BIM</div></div>
+        <div class="about-stat"><div class="about-stat-num">6<span>+</span></div><div class="about-stat-text">Major Projects</div></div>
+        <div class="about-stat"><div class="about-stat-num">10<span>+</span></div><div class="about-stat-text">BIM Tools</div></div>
+        <div class="about-stat"><div class="about-stat-num">6<span>+</span></div><div class="about-stat-text">Certifications</div></div>
+      </div>
+    </div>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-year">2024<br/>Now</div>
+        <div class="tl-content">
+          <h4>BIM Specialist</h4>
+          <div class="tl-company">Lindner Facades Asia Pte. Ltd.</div>
+          <p>Leading façade BIM modelling for landmark Singapore projects including the new Science Centre and ICA Services Centre.</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-year">2021<br/>2024</div>
+        <div class="tl-content">
+          <h4>BIM Modeler</h4>
+          <div class="tl-company">Merdeka Construction Co., Pte Ltd</div>
+          <p>Managed central BIM models, coordinated clash detection, and delivered BIM outputs for major mixed-use developments.</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-year">2019<br/>2020</div>
+        <div class="tl-content">
+          <h4>Project Site Engineer</h4>
+          <div class="tl-company">105 Construction Co., Ltd · Yangon</div>
+          <p>Technical adviser managing design compliance, subcontractors, and quality control for construction projects.</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-year">2023<br/>Now</div>
+        <div class="tl-content">
+          <h4>Specialist Diploma — BIM Management</h4>
+          <div class="tl-company">Singapore Polytechnic</div>
+          <p>Advanced studies in BIM management, digital delivery, and ISO 19650 standards.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="tools">
+  <div class="s-label">Expertise</div>
+  <h2>Tools &amp; <em>Technologies</em></h2>
+  <div class="tools-grid">
+    <div class="tool-card"><span class="tool-icon">🏗️</span><div class="tool-name">Revit</div><div class="tool-type">BIM Authoring</div></div>
+    <div class="tool-card"><span class="tool-icon">🔍</span><div class="tool-name">Navisworks</div><div class="tool-type">Clash Detection</div></div>
+    <div class="tool-card"><span class="tool-icon">🦏</span><div class="tool-name">Rhino</div><div class="tool-type">Parametric Design</div></div>
+    <div class="tool-card"><span class="tool-icon">🌿</span><div class="tool-name">Grasshopper</div><div class="tool-type">Visual Scripting</div></div>
+    <div class="tool-card"><span class="tool-icon">⚡</span><div class="tool-name">Dynamo</div><div class="tool-type">Automation</div></div>
+    <div class="tool-card"><span class="tool-icon">📐</span><div class="tool-name">AutoCAD</div><div class="tool-type">2D Drafting</div></div>
+    <div class="tool-card"><span class="tool-icon">☁️</span><div class="tool-name">BIM 360</div><div class="tool-type">Cloud Collaboration</div></div>
+    <div class="tool-card"><span class="tool-icon">🔩</span><div class="tool-name">Tekla</div><div class="tool-type">Structural BIM</div></div>
+    <div class="tool-card"><span class="tool-icon">🎨</span><div class="tool-name">Twinmotion</div><div class="tool-type">Visualisation</div></div>
+    <div class="tool-card"><span class="tool-icon">📦</span><div class="tool-name">ArchiCAD</div><div class="tool-type">BIM Authoring</div></div>
+  </div>
+  <div class="s-label" style="margin-top:4rem;">Certifications</div>
+  <div class="certs-row">
+    <div class="cert-pill">Automation BIM (Dynamo)</div>
+    <div class="cert-pill">Revit MEP Essential</div>
+    <div class="cert-pill">Creating a BIM Execution Plan</div>
+    <div class="cert-pill">BIM for Visualization</div>
+    <div class="cert-pill">Graphisoft Certified ArchiCAD BIM User</div>
+    <div class="cert-pill">BIM Foundation</div>
+  </div>
+</section>
+
+<section class="section section-dark" id="projects">
+  <div class="s-label">Portfolio</div>
+  <h2>Selected <em>Projects</em></h2>
+  <div class="projects-grid">
+    <div class="project-card">
+      <div class="project-num">01</div>
+      <div class="project-period">Dec 2024 – Present</div>
+      <h3>New Science Centre Singapore</h3>
+      <p>A landmark 55,000 sqm building serving as gateway to Jurong Lake Gardens, set to open end-2027.</p>
+      <span class="project-tag">Façade BIM · Revit · Rhino · Grasshopper</span>
+    </div>
+    <div class="project-card">
+      <div class="project-num">02</div>
+      <div class="project-period">Dec 2024 – Present</div>
+      <h3>New ICA Services Centre</h3>
+      <p>New government services centre at 2 Crawford Street, adjacent to the current ICA building.</p>
+      <span class="project-tag">Façade BIM · Coordination</span>
+    </div>
+    <div class="project-card">
+      <div class="project-num">03</div>
+      <div class="project-period">2022 – 2024</div>
+      <h3>Pasir Ris 8</h3>
+      <p>Mixed-use development with 7 residential blocks, 487 units, underground MRT linkway, and 4-storey podium.</p>
+      <span class="project-tag">Façade Modelling · BIM Coordination</span>
+    </div>
+    <div class="project-card">
+      <div class="project-num">04</div>
+      <div class="project-period">2022 – 2023</div>
+      <h3>Sengkang Grand Mall</h3>
+      <p>160,070 sq ft integrated development above Buangkok MRT with 93 retail units and community facilities.</p>
+      <span class="project-tag">Custom Façade · 3D Modelling</span>
+    </div>
+    <div class="project-card">
+      <div class="project-num">05</div>
+      <div class="project-period">2021 – 2023</div>
+      <h3>Pullman Singapore Hill Street</h3>
+      <p>5-star hotel by EL Development, 350 rooms, designed by DP Architects blending heritage and modern design.</p>
+      <span class="project-tag">Façade Modelling · Heritage Building</span>
+    </div>
+    <div class="project-card">
+      <div class="project-num">06</div>
+      <div class="project-period">2020 – 2022</div>
+      <h3>Boulevard 88</h3>
+      <p>Safdie Architects design, 208 hotel rooms and 154 residential units across two 28-storey towers.</p>
+      <span class="project-tag">Façade BIM · Component Modelling</span>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" id="contact">
+  <div class="contact-wrap">
+    <div class="contact-left">
+      <div class="s-label">Contact</div>
+      <h2>Let's Build<br/><em>Together</em></h2>
+      <p>Open to BIM consulting, collaboration on façade projects, and conversations with fellow AEC professionals.</p>
+      <div class="contact-items">
+        <a href="mailto:htet@twowai.com" class="contact-item">
+          <div class="ci-icon">✉</div>
+          <div><div class="ci-label">Email</div><div class="ci-value">htet@twowai.com</div></div>
+        </a>
+        <a href="https://linkedin.com/in/htetwaibim" target="_blank" class="contact-item">
+          <div class="ci-icon">in</div>
+          <div><div class="ci-label">LinkedIn</div><div class="ci-value">linkedin.com/in/htetwaibim</div></div>
+        </a>
+        <a href="tel:+6582015981" class="contact-item">
+          <div class="ci-icon">📞</div>
+          <div><div class="ci-label">Phone</div><div class="ci-value">+65 8201 5981</div></div>
+        </a>
+        <div class="contact-item">
+          <div class="ci-icon">📍</div>
+          <div><div class="ci-label">Location</div><div class="ci-value">Jurong West, Singapore</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="contact-right">
+      <h3>Start a Conversation</h3>
+      <p>Have a project in mind or want to discuss BIM coordination?</p>
+      <a href="mailto:htet@twowai.com" class="btn-gold">Send Me a Message</a>
+      <div class="cr-div"></div>
+      <div class="cr-info">Htet Wai · BIM Specialist<br/>Lindner Facades Asia Pte. Ltd.<br/>Singapore · Available for consulting</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <a href="https://twowai.com" class="footer-brand">Two<span>Wai</span></a>
+  <div class="footer-text">© 2026 Htet Wai. All rights reserved.</div>
+  <div class="footer-text">twowai.com/htet</div>
+</footer>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX - 5 + 'px';
+    cursor.style.top = e.clientY - 5 + 'px';
+  });
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.style.transform = 'scale(3)');
+    el.addEventListener('mouseleave', () => cursor.style.transform = 'scale(1)');
+  });
+</script>
+</body>
+</html>
