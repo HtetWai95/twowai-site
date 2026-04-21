@@ -1,147 +1,104 @@
-import {
-  collection,
-  doc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  getDocs,
-  getDoc,
-  query,
-  where,
-  orderBy,
-  serverTimestamp,
-  arrayUnion,
-  arrayRemove,
-} from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../firebase/config';
+// localStorage-backed service — drop-in replacement for the Firebase version.
+// All functions are async to keep the same call-site interface.
 
-// ── Users ────────────────────────────────────────────────────────────────────
+const KEYS = { users: 'et_users', groups: 'et_groups', expenses: 'et_expenses' };
 
-export async function createUserProfile(uid, { name, email }) {
-  await updateDoc(doc(db, 'users', uid), {
-    id: uid,
-    name,
-    email,
-    createdAt: serverTimestamp(),
-  }).catch(async () => {
-    const { setDoc } = await import('firebase/firestore');
-    await setDoc(doc(db, 'users', uid), {
-      id: uid,
-      name,
-      email,
-      createdAt: serverTimestamp(),
-    });
-  });
+function load(key) {
+  try { return JSON.parse(localStorage.getItem(key) || '[]'); }
+  catch { return []; }
 }
 
+function save(key, data) {
+  localStorage.setItem(key, JSON.stringify(data));
+}
+
+function genId() {
+  return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+}
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+
 export async function getUserProfile(uid) {
-  const snap = await getDoc(doc(db, 'users', uid));
-  return snap.exists() ? snap.data() : null;
+  return load(KEYS.users).find((u) => u.id === uid) || null;
 }
 
 export async function findUserByEmail(email) {
-  const q = query(collection(db, 'users'), where('email', '==', email.toLowerCase().trim()));
-  const snap = await getDocs(q);
-  if (snap.empty) return null;
-  return snap.docs[0].data();
+  return load(KEYS.users).find((u) => u.email === email.toLowerCase().trim()) || null;
 }
 
 // ── Groups ────────────────────────────────────────────────────────────────────
 
 export async function createGroup({ name, members, createdBy }) {
-  const ref = await addDoc(collection(db, 'groups'), {
-    name,
-    members,
-    createdBy,
-    createdAt: serverTimestamp(),
-  });
-  return ref.id;
+  const groups = load(KEYS.groups);
+  const group = { id: genId(), name, members, createdBy, createdAt: new Date().toISOString() };
+  save(KEYS.groups, [...groups, group]);
+  return group.id;
 }
 
 export async function getGroup(groupId) {
-  const snap = await getDoc(doc(db, 'groups', groupId));
-  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
-}
-
-export async function getUserGroups(userId) {
-  const q = query(
-    collection(db, 'groups'),
-    where('members', 'array-contains', userId)
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  return load(KEYS.groups).find((g) => g.id === groupId) || null;
 }
 
 export async function getUserGroupsWithMemberObjects(userId) {
-  // Groups store members as objects — query by member id field
-  const allGroupsSnap = await getDocs(collection(db, 'groups'));
-  const groups = allGroupsSnap.docs
-    .map((d) => ({ id: d.id, ...d.data() }))
-    .filter((g) => g.members?.some((m) => m.id === userId));
-  return groups;
+  return load(KEYS.groups).filter((g) => g.members?.some((m) => m.id === userId));
 }
 
 export async function updateGroup(groupId, updates) {
-  await updateDoc(doc(db, 'groups', groupId), updates);
+  save(KEYS.groups, load(KEYS.groups).map((g) => g.id === groupId ? { ...g, ...updates } : g));
 }
 
 export async function addGroupMember(groupId, member) {
-  await updateDoc(doc(db, 'groups', groupId), {
-    members: arrayUnion(member),
-  });
+  save(KEYS.groups, load(KEYS.groups).map((g) =>
+    g.id === groupId ? { ...g, members: [...(g.members || []), member] } : g
+  ));
 }
 
 export async function removeGroupMember(groupId, memberId) {
-  const group = await getGroup(groupId);
-  if (!group) return;
-  const updatedMembers = group.members.filter((m) => m.id !== memberId);
-  await updateDoc(doc(db, 'groups', groupId), { members: updatedMembers });
+  save(KEYS.groups, load(KEYS.groups).map((g) =>
+    g.id === groupId ? { ...g, members: g.members.filter((m) => m.id !== memberId) } : g
+  ));
 }
 
 export async function deleteGroup(groupId) {
-  await deleteDoc(doc(db, 'groups', groupId));
+  save(KEYS.groups, load(KEYS.groups).filter((g) => g.id !== groupId));
 }
 
-// ── Expenses ─────────────────────────────────────────────────────────────────
+// ── Expenses ──────────────────────────────────────────────────────────────────
 
-export async function createExpense(expenseData) {
-  const docRef = await addDoc(collection(db, 'expenses'), {
-    ...expenseData,
-    createdAt: serverTimestamp(),
-  });
-  return docRef.id;
+export async function createExpense(data) {
+  const expenses = load(KEYS.expenses);
+  const expense = {
+    ...data,
+    id: genId(),
+    date: data.date instanceof Date ? data.date.toISOString() : data.date,
+    createdAt: new Date().toISOString(),
+  };
+  save(KEYS.expenses, [...expenses, expense]);
+  return expense.id;
 }
 
 export async function getGroupExpenses(groupId) {
-  const q = query(
-    collection(db, 'expenses'),
-    where('groupId', '==', groupId),
-    orderBy('date', 'desc')
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  return load(KEYS.expenses)
+    .filter((e) => e.groupId === groupId)
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
 }
 
 export async function getExpense(expenseId) {
-  const snap = await getDoc(doc(db, 'expenses', expenseId));
-  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+  return load(KEYS.expenses).find((e) => e.id === expenseId) || null;
 }
 
 export async function updateExpense(expenseId, updates) {
-  await updateDoc(doc(db, 'expenses', expenseId), updates);
+  save(KEYS.expenses, load(KEYS.expenses).map((e) => e.id === expenseId ? { ...e, ...updates } : e));
 }
 
 export async function deleteExpense(expenseId) {
-  await deleteDoc(doc(db, 'expenses', expenseId));
+  save(KEYS.expenses, load(KEYS.expenses).filter((e) => e.id !== expenseId));
 }
 
-// ── Receipt Images ────────────────────────────────────────────────────────────
+// ── Receipt Images ─────────────────────────────────────────────────────────────
+// Images are not persisted (localStorage size limits).
+// OCR scanning still works; the image just won't show in expense detail after save.
 
-export async function uploadReceiptImage(uri, expenseId) {
-  const response = await fetch(uri);
-  const blob = await response.blob();
-  const storageRef = ref(storage, `receipts/${expenseId}_${Date.now()}.jpg`);
-  await uploadBytes(storageRef, blob);
-  return getDownloadURL(storageRef);
+export async function uploadReceiptImage(_file, _expenseId) {
+  return null;
 }

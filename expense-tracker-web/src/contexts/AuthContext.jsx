@@ -1,10 +1,20 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import {
-  createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  signOut, onAuthStateChanged, updateProfile,
-} from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '../firebase/config';
+
+const USERS_KEY = 'et_users';
+const SESSION_KEY = 'et_session_uid';
+
+function getUsers() {
+  try { return JSON.parse(localStorage.getItem(USERS_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function saveUsers(users) {
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+
+function genId() {
+  return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+}
 
 const AuthContext = createContext(null);
 
@@ -14,33 +24,48 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    return onAuthStateChanged(auth, async (u) => {
-      setUser(u);
-      if (u) {
-        const snap = await getDoc(doc(db, 'users', u.uid));
-        setProfile(snap.exists() ? snap.data() : null);
-      } else {
-        setProfile(null);
+    const uid = localStorage.getItem(SESSION_KEY);
+    if (uid) {
+      const found = getUsers().find((u) => u.id === uid);
+      if (found) {
+        setUser({ uid: found.id, email: found.email });
+        setProfile(found);
       }
-      setLoading(false);
-    });
+    }
+    setLoading(false);
   }, []);
 
   async function register(name, email, password) {
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(cred.user, { displayName: name });
-    const data = { id: cred.user.uid, name, email: email.toLowerCase(), createdAt: serverTimestamp() };
-    await setDoc(doc(db, 'users', cred.user.uid), data);
-    setProfile(data);
+    const users = getUsers();
+    if (users.some((u) => u.email === email.toLowerCase())) {
+      const err = new Error('Email already in use');
+      err.code = 'auth/email-already-in-use';
+      throw err;
+    }
+    const newUser = { id: genId(), name, email: email.toLowerCase(), password, createdAt: new Date().toISOString() };
+    saveUsers([...users, newUser]);
+    localStorage.setItem(SESSION_KEY, newUser.id);
+    setUser({ uid: newUser.id, email: newUser.email });
+    setProfile(newUser);
   }
 
   async function login(email, password) {
-    const cred = await signInWithEmailAndPassword(auth, email, password);
-    const snap = await getDoc(doc(db, 'users', cred.user.uid));
-    if (snap.exists()) setProfile(snap.data());
+    const found = getUsers().find((u) => u.email === email.toLowerCase() && u.password === password);
+    if (!found) {
+      const err = new Error('Invalid credentials');
+      err.code = 'auth/invalid-credential';
+      throw err;
+    }
+    localStorage.setItem(SESSION_KEY, found.id);
+    setUser({ uid: found.id, email: found.email });
+    setProfile(found);
   }
 
-  const logout = () => signOut(auth);
+  function logout() {
+    localStorage.removeItem(SESSION_KEY);
+    setUser(null);
+    setProfile(null);
+  }
 
   return (
     <AuthContext.Provider value={{ user, profile, loading, register, login, logout }}>
