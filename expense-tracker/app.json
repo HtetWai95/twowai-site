@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "SplitWise Clone",
+    "slug": "expense-tracker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#5B4FE8"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.twowai.expensetracker",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to scan receipts.",
+        "NSPhotoLibraryUsageDescription": "This app accesses your photos to upload receipts."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#5B4FE8"
+      },
+      "package": "com.twowai.expensetracker",
+      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "This app accesses your photos to upload receipts.",
+          "cameraPermission": "This app uses the camera to scan receipts."
+        }
+      ]
+    ]
+  }
+}
